@@ -1,0 +1,157 @@
+@use '@/styles/index.scss' as *;
+
+/* Campos compartidos por los editores de nodos (drawer) */
+
+.editor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &--sm {
+    flex: 0 1 180px;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $primary-dark;
+
+    em {
+      font-style: normal;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.68rem;
+      font-weight: 600;
+
+      &.is-req { color: $alert-warning; }
+      &.is-opt { color: $text-secondary; font-weight: 500; }
+    }
+  }
+
+  textarea,
+  input {
+    font-family: $font-principal;
+    font-size: 0.87rem;
+    color: $primary-dark;
+    background: $white;
+    border: 1.5px solid rgba($primary-dark, 0.13);
+    border-radius: 11px;
+    padding: 0.65rem 0.8rem;
+    outline: none;
+
+    &:focus {
+      border-color: $primary;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+.field-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: $font-principal;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $primary-dark;
+  background: $white;
+  border: 1.5px solid rgba($primary-dark, 0.14);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  transition: all 0.15s ease;
+
+  small {
+    font-weight: 600;
+    font-size: 0.64rem;
+    color: $text-secondary;
+  }
+
+  &:hover {
+    border-color: rgba($primary, 0.5);
+  }
+
+  &.is-on {
+    background: $primary;
+    border-color: $primary;
+    color: $white;
+
+    small {
+      color: rgba($white, 0.8);
+    }
+  }
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $primary-dark;
+
+  input {
+    display: none;
+  }
+
+  span i {
+    margin-right: 0.25rem;
+  }
+
+  &__pill {
+    width: 36px;
+    height: 21px;
+    border-radius: 999px;
+    background: rgba($primary-dark, 0.18);
+    position: relative;
+    transition: background 0.18s ease;
+    flex-shrink: 0;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: $white;
+      transition: transform 0.18s ease;
+    }
+  }
+
+  input:checked + .toggle__pill {
+    background: $primary;
+
+    &::after {
+      transform: translateX(15px);
+    }
+  }
+}
