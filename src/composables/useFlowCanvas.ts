@@ -10,15 +10,24 @@ export interface NodePos {
 export const NODE_W = 280
 export const NODE_H = 96
 
-const STORAGE_KEY = 'replay-flow-layout-v1'
+/** Mobile-first: en pantallas angostas el flujo se apila en columna */
+const IS_NARROW = typeof window !== 'undefined' && window.innerWidth < 720
 
-/** Layout por defecto: zigzag horizontal estilo n8n */
-const DEFAULT_POSITIONS: Record<FlowNodeId, NodePos> = {
-  model: { x: 60, y: 90 },
-  scene: { x: 430, y: 260 },
-  format: { x: 800, y: 90 },
-  action: { x: 1170, y: 260 },
-}
+const STORAGE_KEY = IS_NARROW ? 'replay-flow-layout-m1' : 'replay-flow-layout-v1'
+
+const DEFAULT_POSITIONS: Record<FlowNodeId, NodePos> = IS_NARROW
+  ? {
+      model: { x: 24, y: 24 },
+      scene: { x: 24, y: 184 },
+      format: { x: 24, y: 344 },
+      action: { x: 24, y: 504 },
+    }
+  : {
+      model: { x: 60, y: 90 },
+      scene: { x: 430, y: 260 },
+      format: { x: 800, y: 90 },
+      action: { x: 1170, y: 260 },
+    }
 
 export function useFlowCanvas() {
   const positions = reactive<Record<FlowNodeId, NodePos>>(loadPositions())
@@ -147,16 +156,25 @@ export function useFlowCanvas() {
     () => `translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
   )
 
-  /** Curva bezier horizontal entre el puerto de salida de `from` y el de entrada de `to` */
+  /** Curva bezier entre nodos; elige puertos laterales o vertical según la posición relativa */
   function edgePath(from: FlowNodeId, to: FlowNodeId, fromH = NODE_H, toH = NODE_H): string {
     const a = positions[from]
     const b = positions[to]
-    const x1 = a.x + NODE_W
-    const y1 = a.y + fromH / 2
-    const x2 = b.x
-    const y2 = b.y + toH / 2
-    const dx = Math.max(60, Math.abs(x2 - x1) / 2)
-    return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`
+    const horizontal = Math.abs(b.x - a.x) >= Math.abs(b.y - a.y)
+    if (horizontal) {
+      const x1 = a.x + NODE_W
+      const y1 = a.y + fromH / 2
+      const x2 = b.x
+      const y2 = b.y + toH / 2
+      const dx = Math.max(60, Math.abs(x2 - x1) / 2)
+      return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`
+    }
+    const x1 = a.x + NODE_W / 2
+    const y1 = a.y + fromH
+    const x2 = b.x + NODE_W / 2
+    const y2 = b.y
+    const dy = Math.max(40, Math.abs(y2 - y1) / 2)
+    return `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`
   }
 
   return {

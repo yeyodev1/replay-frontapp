@@ -97,3 +97,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .sk-shimmer, .sk-shimmer--dark { animation: none; }
 }
+
+/* Mobile-first: targets tactiles minimos de 44px */
+@media (max-width: 720px) {
+  button:not(.fcanvas__controls button) {
+    min-height: 44px;
+  }
+}

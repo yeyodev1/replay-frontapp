@@ -1,26 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AppSidebar from './AppSidebar.vue'
 import logoLight from '@/assets/logos/bakano-light.png'
+import { useUserStore } from '@/stores/user'
 
-const sidebarOpen = ref(false)
+const router = useRouter()
+const userStore = useUserStore()
+
+const tabs = [
+  { to: '/', icon: 'fa-solid fa-wand-magic-sparkles', label: 'Crear' },
+  { to: '/videos', icon: 'fa-solid fa-film', label: 'Videos' },
+  { to: '/recursos', icon: 'fa-solid fa-box-archive', label: 'Recursos' },
+  { to: '/gastos', icon: 'fa-solid fa-coins', label: 'Gastos' },
+  { to: '/usuarios', icon: 'fa-solid fa-users', label: 'Equipo' },
+]
+
+function logout() {
+  userStore.logout()
+  router.push('/login')
+}
 </script>
 
 <template>
   <div class="shell">
     <header class="shell__topbar">
-      <button class="shell__burger" @click="sidebarOpen = !sidebarOpen" aria-label="Menú">
-        <i class="fa-solid fa-bars"></i>
-      </button>
       <img :src="logoLight" alt="Bakano" class="shell__topbar-logo" />
       <span class="shell__topbar-name">Replay</span>
+      <button class="shell__logout" @click="logout" aria-label="Cerrar sesión">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
     </header>
 
-    <Transition name="scrim">
-      <div v-if="sidebarOpen" class="shell__scrim" @click="sidebarOpen = false"></div>
-    </Transition>
-
-    <AppSidebar :open="sidebarOpen" @navigate="sidebarOpen = false" />
+    <AppSidebar :open="false" />
 
     <main class="shell__content">
       <RouterView v-slot="{ Component, route }">
@@ -29,6 +40,19 @@ const sidebarOpen = ref(false)
         </Transition>
       </RouterView>
     </main>
+
+    <nav class="shell__tabbar">
+      <router-link
+        v-for="t in tabs"
+        :key="t.to"
+        :to="t.to"
+        class="shell__tab"
+        exact-active-class="is-active"
+      >
+        <i :class="t.icon"></i>
+        <span>{{ t.label }}</span>
+      </router-link>
+    </nav>
   </div>
 </template>
 
@@ -49,7 +73,7 @@ const sidebarOpen = ref(false)
     min-width: 0;
   }
 
-  &__scrim {
+  &__tabbar {
     display: none;
   }
 }
@@ -70,16 +94,6 @@ const sidebarOpen = ref(false)
   transform: translateY(-6px);
 }
 
-.scrim-enter-active,
-.scrim-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.scrim-enter-from,
-.scrim-leave-to {
-  opacity: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .view-enter-active,
   .view-leave-active {
@@ -94,9 +108,10 @@ const sidebarOpen = ref(false)
     &__topbar {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
+      gap: 0.7rem;
       background: $primary-dark;
-      padding: 0.8rem 1.1rem;
+      padding: 0.75rem 1.1rem;
+      padding-top: calc(0.75rem + env(safe-area-inset-top));
       position: sticky;
       top: 0;
       z-index: 30;
@@ -115,21 +130,63 @@ const sidebarOpen = ref(false)
       text-transform: uppercase;
     }
 
-    &__burger {
+    &__logout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      width: 44px;
+      height: 44px;
       background: none;
       border: none;
-      color: $text-light;
-      font-size: 1.1rem;
-      padding: 0.3rem 0.4rem;
+      color: rgba($text-light, 0.75);
+      font-size: 1rem;
     }
 
-    &__scrim {
-      display: block;
-      position: fixed;
-      inset: 0;
-      background: rgba($primary-dark, 0.55);
-      z-index: 40;
+    &__content {
+      padding-bottom: calc(64px + env(safe-area-inset-bottom));
     }
+
+    /* Barra de pestañas inferior — navegación principal en móvil */
+    &__tabbar {
+      display: flex;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      background: $primary-dark;
+      border-top: 1px solid rgba($white, 0.08);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}
+
+.shell__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  flex: 1;
+  min-height: 56px;
+  color: rgba($text-light, 0.55);
+  text-decoration: none;
+  font-size: 0.62rem;
+  font-weight: 700;
+
+  i {
+    font-size: 1.05rem;
+  }
+
+  &.is-active {
+    color: $primary;
+  }
+}
+
+@media (min-width: 861px) {
+  .shell__logout {
+    display: none;
   }
 }
 </style>

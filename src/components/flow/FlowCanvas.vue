@@ -241,8 +241,17 @@ const edges = computed<Array<{ from: FlowNodeId; to: FlowNodeId; live: boolean }
 }
 
 @media (max-width: 720px) {
+  .fcanvas {
+    min-height: 68vh;
+  }
+
   .fcanvas__hint {
     display: none;
+  }
+
+  .fcanvas__controls {
+    left: 10px;
+    bottom: 10px;
   }
 }
 </style>

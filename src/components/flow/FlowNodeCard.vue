@@ -186,4 +186,10 @@ const emit = defineEmits<{
     .fa-circle { color: rgba($primary-dark, 0.25); }
   }
 }
+
+@media (max-width: 720px) {
+  .fnode__port {
+    display: none;
+  }
+}
 </style>

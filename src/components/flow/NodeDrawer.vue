@@ -160,4 +160,27 @@ const emit = defineEmits<{ (e: 'close'): void }>()
     transition: none !important;
   }
 }
+
+/* Movil: el editor sube como bottom-sheet */
+@media (max-width: 720px) {
+  .drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 80vh;
+    border-left: none;
+    border-top: 1px solid rgba($primary-dark, 0.1);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -18px 40px rgba($primary-dark, 0.22);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .drawer-enter-from,
+  .drawer-leave-to {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
 </style>
