@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { VideoJob } from '@/types/video'
 
+
 /* Póster de marca mientras el video no reproduce (SVG inline, sin requests) */
 const POSTER =
   'data:image/svg+xml;utf8,' +
@@ -14,6 +15,20 @@ const props = defineProps<{ job: VideoJob; statusLabel: string }>()
 const isActive = computed(
   () => props.job.status === 'pending' || props.job.status === 'processing',
 )
+
+const pct = computed(() => {
+  const p = props.job.progress
+  return typeof p === 'number' && p > 0 ? Math.min(p, 99) : null
+})
+
+/** ETA aproximado: tiempo transcurrido escalado por el % restante */
+const eta = computed(() => {
+  if (pct.value === null || pct.value < 5) return null
+  const elapsed = (Date.now() - new Date(props.job.createdAt).getTime()) / 1000
+  const remaining = Math.round((elapsed * (100 - pct.value)) / pct.value)
+  if (remaining <= 0 || remaining > 600) return null
+  return remaining
+})
 </script>
 
 <template>
@@ -27,8 +42,12 @@ const isActive = computed(
       playsinline
     />
     <div v-else class="media__placeholder" :class="`is-${job.status}`">
-      <span v-if="isActive" class="spinner" aria-hidden="true"></span>
-      <span class="media__text">{{ statusLabel }}</span>
+      <span v-if="isActive && pct === null" class="spinner" aria-hidden="true"></span>
+      <span class="media__text">{{ statusLabel }}{{ pct !== null ? ' ' + pct + '%' : '' }}</span>
+      <div v-if="isActive && pct !== null" class="media__bar">
+        <div class="media__bar-fill" :style="{ width: pct + '%' }"></div>
+      </div>
+      <span v-if="eta !== null" class="media__eta">~{{ eta }} s restantes</span>
       <span v-if="job.status === 'failed' && job.error" class="media__error">
         {{ job.error }}
       </span>
@@ -67,6 +86,26 @@ const isActive = computed(
   &__text {
     font-weight: 600;
     font-size: 0.9rem;
+  }
+
+  &__bar {
+    display: flex;
+    width: 70%;
+    height: 6px;
+    background: rgba($white, 0.15);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    background: $primary;
+    border-radius: 999px;
+    transition: width 0.8s ease;
+  }
+
+  &__eta {
+    font-size: 0.7rem;
+    color: rgba($white, 0.6);
   }
 
   &__error {

@@ -89,7 +89,12 @@ onMounted(load)
         @change="onFile"
       />
 
-      <p v-if="loading" class="picker__loading">Cargando…</p>
+      <template v-if="loading">
+        <div v-for="n in 3" :key="'sk' + n" class="picker__item" style="border-color: transparent;">
+          <span class="sk-shimmer" style="width: 100%; height: 54px; border-radius: 8px;"></span>
+          <span class="sk-shimmer" style="width: 70%; height: 8px;"></span>
+        </div>
+      </template>
       <p v-else-if="!assets.length" class="picker__loading">{{ meta.empty }}</p>
 
       <button

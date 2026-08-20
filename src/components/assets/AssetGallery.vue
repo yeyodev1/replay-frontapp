@@ -24,7 +24,14 @@ const grouped = computed(() =>
   <section class="gallery">
     <h2><i class="fa-solid fa-images"></i> Biblioteca ({{ assets.length }})</h2>
 
-    <p v-if="loading && !assets.length" class="gallery__empty">Cargando…</p>
+    <div v-if="loading && !assets.length" class="group__items">
+      <div v-for="n in 6" :key="n" class="asset">
+        <div class="sk-shimmer" style="height: 100px; border-radius: 0;"></div>
+        <div class="asset__foot">
+          <span class="sk-shimmer" style="height: 10px; width: 70%;"></span>
+        </div>
+      </div>
+    </div>
     <p v-else-if="!assets.length" class="gallery__empty">
       Vacía por ahora — sube tu primer escenario, avatar o voz.
     </p>

@@ -10,9 +10,17 @@ const userStore = useUserStore()
 
 <template>
   <section class="panel panel--list">
-    <h2 class="panel__title"><i class="fa-solid fa-users"></i> Usuarios ({{ users.length }})</h2>
+    <h2 class="panel__title"><i class="fa-solid fa-users"></i> Usuarios{{ users.length ? ` (${users.length})` : '' }}</h2>
 
-    <p v-if="loading" class="users-empty">Cargando…</p>
+    <div v-if="loading && !users.length" class="user-list">
+      <div v-for="n in 3" :key="n" class="user-row">
+        <span class="sk-shimmer" style="width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;"></span>
+        <span class="user-row__info" style="gap: 6px;">
+          <span class="sk-shimmer" style="height: 12px; width: 130px;"></span>
+          <span class="sk-shimmer" style="height: 9px; width: 180px;"></span>
+        </span>
+      </div>
+    </div>
 
     <div class="user-list">
       <article v-for="u in users" :key="u.id" class="user-row">

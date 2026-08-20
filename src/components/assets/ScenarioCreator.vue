@@ -82,6 +82,13 @@ async function submit() {
       </button>
     </div>
 
+    <div v-if="creating" class="creator__progress">
+      <div class="creator__progress-track">
+        <div class="creator__progress-fill" :style="{ width: (progress ?? 8) + '%' }"></div>
+      </div>
+      <small>{{ progress != null ? progress + '%' : 'en cola…' }} — puedes salir, se guarda solo al terminar</small>
+    </div>
+
     <p v-if="error" class="creator__msg is-error">
       <i class="fa-solid fa-circle-exclamation"></i>{{ error }}
     </p>
@@ -98,6 +105,31 @@ async function submit() {
 
 <style scoped lang="scss">
 @use './creatorStyles.scss' as *;
+
+.creator__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  small {
+    font-size: 0.68rem;
+    color: $text-secondary;
+  }
+}
+
+.creator__progress-track {
+  display: flex;
+  height: 6px;
+  background: rgba($primary-dark, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.creator__progress-fill {
+  background: linear-gradient(90deg, $primary, $secondary);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
 
 .creator__sizes {
   display: flex;
