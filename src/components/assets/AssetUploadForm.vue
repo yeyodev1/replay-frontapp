@@ -106,8 +106,8 @@ async function submit() {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  flex: 0 1 360px;
-  min-width: 290px;
+  flex: 0 1 340px;
+  min-width: 280px;
   background: $white;
   border: 1px solid rgba($primary-dark, 0.08);
   border-radius: 18px;

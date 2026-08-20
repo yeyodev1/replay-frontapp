@@ -136,8 +136,9 @@ export function useFlowCanvas() {
     const minY = Math.min(...xs.map((p) => p.y)) - 40
     const maxX = Math.max(...xs.map((p) => p.x)) + NODE_W + 40
     const maxY = Math.max(...xs.map((p) => p.y)) + NODE_H + 80
-    const s = Math.min(1, rect.width / (maxX - minX), rect.height / (maxY - minY))
-    scale.value = Math.max(0.35, s)
+    const fitScale = Math.min(1, rect.width / (maxX - minX), rect.height / (maxY - minY))
+    // nunca encoger tanto que los nodos se vuelvan ilegibles
+    scale.value = Math.min(1, Math.max(0.72, fitScale))
     tx.value = (rect.width - (maxX - minX) * scale.value) / 2 - minX * scale.value
     ty.value = (rect.height - (maxY - minY) * scale.value) / 2 - minY * scale.value
   }

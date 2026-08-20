@@ -55,8 +55,8 @@ const grouped = computed(() =>
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  flex: 1 1 480px;
-  min-width: 300px;
+  flex: 1 1 400px;
+  min-width: 290px;
   background: $white;
   border: 1px solid rgba($primary-dark, 0.08);
   border-radius: 18px;

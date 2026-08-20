@@ -47,7 +47,7 @@ defineProps<{ stats: SpendStats }>()
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  flex: 1 1 210px;
+  flex: 1 1 180px;
   background: $white;
   border: 1px solid rgba($primary-dark, 0.07);
   border-radius: 16px;

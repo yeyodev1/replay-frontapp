@@ -13,7 +13,7 @@ const isActive = computed(
   <div class="media">
     <video
       v-if="job.status === 'completed' && job.videoUrl"
-      :src="job.videoUrl"
+      :src="job.videoUrl + '#t=0.5'"
       controls
       preload="metadata"
       playsinline
