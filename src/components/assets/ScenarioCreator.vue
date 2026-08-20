@@ -11,20 +11,39 @@ const creating = ref(false)
 const error = ref('')
 const success = ref('')
 
+const progress = ref<number | null>(null)
+
 async function submit() {
   creating.value = true
   error.value = ''
   success.value = ''
+  progress.value = null
+  const assetName = name.value.trim()
   try {
-    await assetService.createScenario(name.value.trim(), prompt.value.trim(), size.value)
-    success.value = `Escenario "${name.value.trim()}" generado ✓`
-    name.value = ''
-    prompt.value = ''
-    emit('created')
+    const { taskId } = await assetService.startScenario(assetName, prompt.value.trim(), size.value)
+    // polea hasta 4 minutos; el backend crea el asset al completar
+    for (let i = 0; i < 60; i++) {
+      await new Promise((r) => setTimeout(r, 4000))
+      const st = await assetService.scenarioStatus(taskId, assetName)
+      if (st.status === 'completed') {
+        success.value = `Escenario "${assetName}" generado ✓`
+        name.value = ''
+        prompt.value = ''
+        emit('created')
+        return
+      }
+      if (st.status === 'failed') {
+        error.value = st.error
+        return
+      }
+      progress.value = st.progress ?? null
+    }
+    error.value = 'La generación está tardando — revisa la biblioteca en unos minutos'
   } catch (e: any) {
     error.value = e?.message || 'Error generando el escenario'
   } finally {
     creating.value = false
+    progress.value = null
   }
 }
 </script>
@@ -72,7 +91,7 @@ async function submit() {
 
     <button class="creator__go" :disabled="creating || !name.trim() || !prompt.trim()" @click="submit">
       <i :class="creating ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-wand-magic-sparkles'"></i>
-      {{ creating ? 'Generando… (~20s)' : 'Generar escenario' }}
+      {{ creating ? `Generando…${progress != null ? ' ' + progress + '%' : ''}` : 'Generar escenario' }}
     </button>
   </section>
 </template>

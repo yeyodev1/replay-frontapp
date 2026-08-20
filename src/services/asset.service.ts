@@ -22,8 +22,22 @@ class AssetService extends APIBase {
     return data
   }
 
-  async createScenario(name: string, prompt: string, size: string): Promise<Asset> {
-    const { data } = await this.post<Asset>('assets/scenario', { name, prompt, size })
+  async startScenario(name: string, prompt: string, size: string): Promise<{ taskId: string }> {
+    const { data } = await this.post<{ taskId: string }>('assets/scenario', { name, prompt, size })
+    return data
+  }
+
+  async scenarioStatus(
+    taskId: string,
+    name: string,
+  ): Promise<
+    | { status: 'processing'; progress?: number }
+    | { status: 'failed'; error: string }
+    | { status: 'completed'; asset: Asset }
+  > {
+    const { data } = await this.get<any>(
+      `assets/scenario/status?taskId=${encodeURIComponent(taskId)}&name=${encodeURIComponent(name)}`,
+    )
     return data
   }
 }
