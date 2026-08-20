@@ -2,6 +2,13 @@
 import { computed } from 'vue'
 import type { VideoJob } from '@/types/video'
 
+/* Póster de marca mientras el video no reproduce (SVG inline, sin requests) */
+const POSTER =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="%23191423"/><stop offset="1" stop-color="%235c3070"/></linearGradient></defs><rect width="640" height="360" fill="url(%23g)"/><circle cx="320" cy="164" r="46" fill="%23e6285c" opacity="0.95"/><polygon points="306,140 306,188 348,164" fill="white"/><text x="320" y="248" text-anchor="middle" font-family="Montserrat, Arial" font-size="20" font-weight="700" fill="white" opacity="0.85">Replay</text><text x="320" y="274" text-anchor="middle" font-family="Montserrat, Arial" font-size="13" fill="white" opacity="0.5">toca para reproducir</text></svg>`,
+  )
+
 const props = defineProps<{ job: VideoJob; statusLabel: string }>()
 
 const isActive = computed(
@@ -13,9 +20,10 @@ const isActive = computed(
   <div class="media">
     <video
       v-if="job.status === 'completed' && job.videoUrl"
-      :src="job.videoUrl + '#t=0.5'"
+      :src="job.videoUrl"
+      :poster="POSTER"
       controls
-      preload="metadata"
+      preload="none"
       playsinline
     />
     <div v-else class="media__placeholder" :class="`is-${job.status}`">
