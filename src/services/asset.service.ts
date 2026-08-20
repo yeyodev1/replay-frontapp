@@ -16,6 +16,16 @@ class AssetService extends APIBase {
   async remove(id: string): Promise<void> {
     await this.delete(`assets/${id}`)
   }
+
+  async createVoice(name: string, text: string, voice: string, speed: number): Promise<Asset> {
+    const { data } = await this.post<Asset>('assets/voice', { name, text, voice, speed })
+    return data
+  }
+
+  async createScenario(name: string, prompt: string, size: string): Promise<Asset> {
+    const { data } = await this.post<Asset>('assets/scenario', { name, prompt, size })
+    return data
+  }
 }
 
 export const assetService = new AssetService()

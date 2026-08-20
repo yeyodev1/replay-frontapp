@@ -1,0 +1,116 @@
+@use '@/styles/index.scss' as *;
+
+/* Estilos compartidos por los creadores IA (voz y escenario) */
+
+.creator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: $white;
+  border: 1px solid rgba($primary-dark, 0.08);
+  border-radius: 18px;
+  padding: 1.4rem;
+  box-shadow: 0 4px 20px rgba($primary-dark, 0.06);
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: $primary-dark;
+
+    i {
+      color: $secondary-dark;
+    }
+  }
+
+  &__hint {
+    font-size: 0.74rem;
+    color: $text-secondary;
+    line-height: 1.4;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: $primary-dark;
+
+      em {
+        font-style: normal;
+        text-transform: none;
+        font-weight: 500;
+        color: $text-secondary;
+        margin-left: auto;
+      }
+    }
+
+    input,
+    textarea {
+      font-family: $font-principal;
+      font-size: 0.87rem;
+      color: $primary-dark;
+      border: 1.5px solid rgba($primary-dark, 0.13);
+      border-radius: 11px;
+      padding: 0.65rem 0.8rem;
+      outline: none;
+      resize: vertical;
+
+      &:focus {
+        border-color: $secondary;
+      }
+    }
+  }
+
+  &__msg {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+
+    &.is-error {
+      color: $alert-error;
+      background: $alert-error-bg;
+    }
+
+    &.is-ok {
+      color: $alert-success;
+      background: $alert-success-bg;
+    }
+  }
+
+  &__go {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: $font-principal;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: $white;
+    background: $secondary;
+    border: none;
+    border-radius: 12px;
+    padding: 0.8rem;
+
+    &:hover:not(:disabled) {
+      background: $secondary-dark;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}

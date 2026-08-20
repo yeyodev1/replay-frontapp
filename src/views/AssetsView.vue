@@ -4,6 +4,8 @@ import { assetService } from '@/services/asset.service'
 import type { Asset } from '@/types/video'
 import AssetUploadForm from '@/components/assets/AssetUploadForm.vue'
 import AssetGallery from '@/components/assets/AssetGallery.vue'
+import VoiceCreator from '@/components/assets/VoiceCreator.vue'
+import ScenarioCreator from '@/components/assets/ScenarioCreator.vue'
 import { useConfirm } from '@/composables/useConfirm'
 
 const { confirm } = useConfirm()
@@ -57,7 +59,11 @@ onMounted(fetchAssets)
     </p>
 
     <main class="resources__main">
-      <AssetUploadForm @created="fetchAssets" />
+      <div class="resources__col">
+        <AssetUploadForm @created="fetchAssets" />
+        <VoiceCreator @created="fetchAssets" />
+        <ScenarioCreator @created="fetchAssets" />
+      </div>
       <AssetGallery :assets="assets" :loading="loading" @delete="removeAsset" />
     </main>
   </div>
@@ -109,6 +115,14 @@ onMounted(fetchAssets)
     align-items: flex-start;
     gap: 1.4rem;
     flex-wrap: wrap;
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    flex: 0 1 340px;
+    min-width: 280px;
   }
 }
 
