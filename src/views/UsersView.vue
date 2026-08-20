@@ -3,7 +3,9 @@ import { onMounted, ref } from 'vue'
 import { authService, type PublicUser } from '@/services/auth.service'
 import UserCreateForm from '@/components/users/UserCreateForm.vue'
 import UserList from '@/components/users/UserList.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
+const { confirm } = useConfirm()
 const users = ref<PublicUser[]>([])
 const loading = ref(false)
 const error = ref('')
@@ -21,7 +23,13 @@ async function fetchUsers() {
 }
 
 async function removeUser(u: PublicUser) {
-  if (!confirm(`¿Eliminar al usuario ${u.email}?`)) return
+  const ok = await confirm({
+    title: 'Eliminar usuario',
+    message: `${u.email} perderá el acceso a Replay de inmediato.`,
+    confirmLabel: 'Eliminar',
+    danger: true,
+  })
+  if (!ok) return
   error.value = ''
   try {
     await authService.deleteUser(u.id)

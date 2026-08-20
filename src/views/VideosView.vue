@@ -4,10 +4,13 @@ import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useVideosStore } from '@/stores/videos'
 import VideoCard from '@/components/VideoCard.vue'
+import VideoCardSkeleton from '@/components/VideoCardSkeleton.vue'
+import { useConfirm } from '@/composables/useConfirm'
 import type { VideoJob } from '@/types/video'
 
 const store = useVideosStore()
 const router = useRouter()
+const { confirm } = useConfirm()
 const { jobs, loading } = storeToRefs(store)
 
 type Filter = 'todos' | 'activos' | 'listos' | 'fallidos'
@@ -45,12 +48,24 @@ function replicate(job: VideoJob) {
 }
 
 async function replicateExact(job: VideoJob) {
-  if (!confirm(`Repetir exacto (mismo JSON) por ~$${job.estimatedCostUsd.toFixed(2)}?`)) return
+  const ok = await confirm({
+    title: 'Repetir exacto',
+    message: `Se reenviará el mismo JSON, byte a byte. Costo estimado: $${job.estimatedCostUsd.toFixed(2)}.`,
+    confirmLabel: 'Generar de nuevo',
+    icon: 'fa-solid fa-rotate-right',
+  })
+  if (!ok) return
   await store.replicateExact(job._id)
 }
 
 async function removeJob(id: string) {
-  if (!confirm('¿Eliminar este video del historial?')) return
+  const ok = await confirm({
+    title: 'Eliminar video',
+    message: 'Se quitará del historial de forma permanente.',
+    confirmLabel: 'Eliminar',
+    danger: true,
+  })
+  if (!ok) return
   await store.deleteVideo(id)
 }
 
@@ -89,7 +104,9 @@ onBeforeUnmount(() => store.stopPolling())
       </span>
     </div>
 
-    <p v-if="loading && !jobs.length" class="videos__empty">Cargando…</p>
+    <div v-if="loading && !jobs.length" class="videos__grid">
+      <VideoCardSkeleton v-for="n in 6" :key="n" />
+    </div>
 
     <div v-else-if="!filtered.length" class="videos__empty-state">
       <i class="fa-solid fa-clapperboard"></i>

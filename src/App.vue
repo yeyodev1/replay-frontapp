@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -24,6 +25,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="app-container">
     <RouterView />
+    <ConfirmModal />
   </div>
 </template>
 

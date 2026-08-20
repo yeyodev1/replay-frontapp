@@ -4,7 +4,9 @@ import { assetService } from '@/services/asset.service'
 import type { Asset } from '@/types/video'
 import AssetUploadForm from '@/components/assets/AssetUploadForm.vue'
 import AssetGallery from '@/components/assets/AssetGallery.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
+const { confirm } = useConfirm()
 const assets = ref<Asset[]>([])
 const loading = ref(false)
 const error = ref('')
@@ -22,7 +24,13 @@ async function fetchAssets() {
 }
 
 async function removeAsset(a: Asset) {
-  if (!confirm(`¿Eliminar "${a.name}" de la biblioteca?`)) return
+  const ok = await confirm({
+    title: 'Eliminar recurso',
+    message: `"${a.name}" se borrará de la biblioteca y de Cloudinary.`,
+    confirmLabel: 'Eliminar',
+    danger: true,
+  })
+  if (!ok) return
   try {
     await assetService.remove(a._id)
     await fetchAssets()
