@@ -44,6 +44,11 @@ function replicate(job: VideoJob) {
   router.push('/')
 }
 
+async function replicateExact(job: VideoJob) {
+  if (!confirm(`Repetir exacto (mismo JSON) por ~$${job.estimatedCostUsd.toFixed(2)}?`)) return
+  await store.replicateExact(job._id)
+}
+
 async function removeJob(id: string) {
   if (!confirm('¿Eliminar este video del historial?')) return
   await store.deleteVideo(id)
@@ -102,6 +107,7 @@ onBeforeUnmount(() => store.stopPolling())
         :job="job"
         @delete="removeJob"
         @replicate="replicate"
+        @replicate-exact="replicateExact"
       />
     </TransitionGroup>
   </div>

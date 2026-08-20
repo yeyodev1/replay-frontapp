@@ -7,6 +7,7 @@ const props = defineProps<{ job: VideoJob }>()
 const emit = defineEmits<{
   (e: 'delete', id: string): void
   (e: 'replicate', job: VideoJob): void
+  (e: 'replicate-exact', job: VideoJob): void
 }>()
 
 const statusLabel = computed(() => {
@@ -57,8 +58,11 @@ const createdAt = computed(() =>
         </span>
         <span class="video-card__date">{{ createdAt }}</span>
         <div class="video-card__actions">
-          <button class="btn-replicate" title="Volver a generar con esta misma configuración" @click="emit('replicate', job)">
+          <button class="btn-replicate" title="Abrir en el generador con esta configuración" @click="emit('replicate', job)">
             <i class="fa-solid fa-clone"></i> Replicar
+          </button>
+          <button class="btn-replicate btn-replicate--exact" title="Repetir con el MISMO JSON exacto (100% fiel)" @click="emit('replicate-exact', job)">
+            <i class="fa-solid fa-rotate-right"></i> Exacto
           </button>
           <a
             v-if="job.videoUrl"
@@ -213,6 +217,11 @@ const createdAt = computed(() =>
   &:hover {
     color: $alert-error;
   }
+}
+
+.btn-replicate--exact {
+  color: $BAKANO-GREEN !important;
+  background: rgba($BAKANO-GREEN, 0.12) !important;
 }
 
 .btn-replicate {

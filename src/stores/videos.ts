@@ -72,6 +72,13 @@ export const useVideosStore = defineStore('videos', () => {
     }
   }
 
+  async function replicateExact(id: string) {
+    const job = await videoService.replicateExact(id)
+    jobs.value.unshift(job)
+    syncPolling()
+    return job
+  }
+
   async function deleteVideo(id: string) {
     await videoService.deleteVideo(id)
     jobs.value = jobs.value.filter((j) => j._id !== id)
@@ -106,6 +113,7 @@ export const useVideosStore = defineStore('videos', () => {
     fetchCatalog,
     fetchJobs,
     createVideo,
+    replicateExact,
     deleteVideo,
     stopPolling,
     setPrefill,

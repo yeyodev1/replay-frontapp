@@ -26,6 +26,11 @@ class VideoService extends APIBase {
     await this.delete(`videos/${id}`)
   }
 
+  async replicateExact(id: string): Promise<VideoJob> {
+    const { data } = await this.post<VideoJob>(`videos/${id}/replicate`, {})
+    return data
+  }
+
   async getStats(): Promise<SpendStats> {
     const { data } = await this.get<SpendStats>('videos/stats')
     return data
