@@ -31,6 +31,7 @@ const tierLabels: Record<string, string> = {
           <span class="model-row__tag">{{ m.tagline }}</span>
         </span>
         <span class="model-row__meta">
+          <i v-if="m.id === 'wan2.5-preview'" class="fa-solid fa-microphone-lines" title="Acepta tu propia voz"></i>
           <i v-if="m.hasAudio" class="fa-solid fa-volume-high" title="Genera audio"></i>
           <i v-if="m.requiresImage" class="fa-solid fa-image" title="Requiere imagen inicial"></i>
           <strong>${{ Math.min(...Object.values(m.pricePerSecond)).toFixed(3) }}/s</strong>

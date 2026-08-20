@@ -15,6 +15,8 @@ export function createVideoFlow() {
   const duration = ref(0)
   const aspectRatio = ref('16:9')
   const imageUrl = ref('')
+  const scenarioUrl = ref('')
+  const avatarUrl = ref('')
   const audioUrl = ref('')
   const negativePrompt = ref('')
   const seed = ref<number | null>(null)
@@ -49,9 +51,45 @@ export function createVideoFlow() {
   })
 
   const needsImage = computed(() => !!selectedModel.value?.requiresImage)
-  const imageMissing = computed(
-    () => needsImage.value && !/^https?:\/\//.test(imageUrl.value),
-  )
+
+  /** Imagen principal: avatar > escenario > URL manual (asi la esperan los modelos de 1 imagen) */
+  const primaryImage = computed(() => {
+    for (const u of [avatarUrl.value, scenarioUrl.value, imageUrl.value]) {
+      if (/^https?:\/\//.test(u)) return u
+    }
+    return ''
+  })
+
+  /** Lista de imagenes segun el contrato del modelo elegido */
+  const effectiveImageUrls = computed<string[]>(() => {
+    const spec = selectedModel.value
+    if (!spec || !primaryImage.value) return []
+    if (spec.id === 'sora-2') {
+      // sora-2 acepta varias imagenes de referencia: avatar + escenario
+      return [avatarUrl.value, scenarioUrl.value, imageUrl.value]
+        .filter((u) => /^https?:\/\//.test(u))
+        .slice(0, 2)
+    }
+    return [primaryImage.value]
+  })
+
+  /** Explica en una frase como se enviaran los recursos al modelo */
+  const sendPlan = computed(() => {
+    const spec = selectedModel.value
+    if (!spec) return ''
+    const hasAvatar = /^https?:\/\//.test(avatarUrl.value)
+    const hasScenario = /^https?:\/\//.test(scenarioUrl.value)
+    if (!hasAvatar && !hasScenario) return ''
+    if (spec.id === 'sora-2' && hasAvatar && hasScenario)
+      return 'Avatar y escenario van juntos como imagenes de referencia.'
+    if (hasAvatar && hasScenario)
+      return `${spec.name} acepta 1 imagen: va el avatar como imagen inicial y el escenario se describe en el prompt.`
+    return hasAvatar
+      ? 'El avatar va como imagen inicial del video.'
+      : 'El escenario va como imagen inicial del video.'
+  })
+
+  const imageMissing = computed(() => needsImage.value && !primaryImage.value)
 
   const modelDone = computed(() => !!selectedModel.value)
   const sceneDone = computed(() => !!prompt.value.trim() && !imageMissing.value)
@@ -96,7 +134,7 @@ export function createVideoFlow() {
       resolution: resolution.value,
       aspectRatio: aspectRatio.value,
       duration: duration.value,
-      imageUrls: /^https?:\/\//.test(imageUrl.value) ? [imageUrl.value.trim()] : [],
+      imageUrls: effectiveImageUrls.value,
       options: {
         audioUrl:
           spec.id === 'wan2.5-preview' && /^https?:\/\//.test(audioUrl.value)
@@ -122,7 +160,9 @@ export function createVideoFlow() {
       resolution.value = pre.resolution
       duration.value = pre.duration
       aspectRatio.value = pre.aspectRatio
-      imageUrl.value = pre.imageUrls?.[0] ?? ''
+      avatarUrl.value = pre.imageUrls?.[0] ?? ''
+      scenarioUrl.value = pre.imageUrls?.[1] ?? ''
+      imageUrl.value = ''
       audioUrl.value = pre.options?.audioUrl ?? ''
       negativePrompt.value = pre.options?.negativePrompt ?? ''
       seed.value = pre.options?.seed ?? null
@@ -147,7 +187,11 @@ export function createVideoFlow() {
     duration,
     aspectRatio,
     imageUrl,
+    scenarioUrl,
+    avatarUrl,
     audioUrl,
+    primaryImage,
+    sendPlan,
     negativePrompt,
     seed,
     audio,

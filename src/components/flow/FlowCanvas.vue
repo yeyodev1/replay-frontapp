@@ -83,7 +83,7 @@ const edges = computed<Array<{ from: FlowNodeId; to: FlowNodeId; live: boolean }
         color="blue"
         eyebrow="Paso 2 · Escena"
         :title="sceneSummary"
-        :chip="flow.imageUrl.value ? '📷 con imagen' : undefined"
+        :chip="flow.primaryImage.value ? '📷 con imagen' : undefined"
         :done="flow.sceneDone.value"
         has-input
         has-output

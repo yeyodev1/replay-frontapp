@@ -1,50 +1,99 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { assetService } from '@/services/asset.service'
-import type { Asset } from '@/types/video'
+import { assetService, fileToDataUri } from '@/services/asset.service'
+import type { Asset, AssetType } from '@/types/video'
 
 const props = defineProps<{
-  kind: 'image' | 'voz'
+  assetType: AssetType
   modelValue: string
 }>()
 
 const emit = defineEmits<{ (e: 'update:modelValue', url: string): void }>()
 
+const META: Record<string, { label: string; icon: string; empty: string }> = {
+  escenario: { label: 'Escenario', icon: 'fa-solid fa-mountain-sun', empty: 'Sube tu primer escenario' },
+  avatar: { label: 'Avatar', icon: 'fa-solid fa-user-astronaut', empty: 'Sube tu primer avatar' },
+  perspectiva: { label: 'Perspectiva', icon: 'fa-solid fa-camera', empty: 'Sube una perspectiva' },
+  voz: { label: 'Voz', icon: 'fa-solid fa-microphone-lines', empty: 'Sube tu primera voz (mp3/wav 3-30s)' },
+  otro: { label: 'Referencia', icon: 'fa-solid fa-shapes', empty: 'Sube una referencia' },
+}
+
 const assets = ref<Asset[]>([])
 const loading = ref(true)
+const uploading = ref(false)
+const error = ref('')
+const fileInput = ref<HTMLInputElement | null>(null)
 
-const items = computed(() =>
-  props.kind === 'voz'
-    ? assets.value.filter((a) => a.type === 'voz')
-    : assets.value.filter((a) => a.resourceType === 'image'),
-)
+const meta = computed(() => META[props.assetType] ?? META.otro!)
+const isVoice = computed(() => props.assetType === 'voz')
+
+async function load() {
+  loading.value = true
+  try {
+    assets.value = await assetService.list(props.assetType)
+  } finally {
+    loading.value = false
+  }
+}
 
 function toggle(url: string) {
   emit('update:modelValue', props.modelValue === url ? '' : url)
 }
 
-onMounted(async () => {
-  try {
-    assets.value = await assetService.list()
-  } finally {
-    loading.value = false
+async function onFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const maxMb = isVoice.value ? 15 : 10
+  if (file.size > maxMb * 1024 * 1024) {
+    error.value = `Máximo ${maxMb}MB`
+    return
   }
-})
+  uploading.value = true
+  error.value = ''
+  try {
+    const dataUri = await fileToDataUri(file)
+    const name = file.name.replace(/\.[^.]+$/, '')
+    const created = await assetService.create(name, props.assetType, dataUri)
+    assets.value.unshift(created)
+    emit('update:modelValue', created.url)
+  } catch (err: any) {
+    error.value = err?.message || 'Error subiendo'
+  } finally {
+    uploading.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
+}
+
+onMounted(load)
 </script>
 
 <template>
-  <div v-if="loading || items.length" class="picker">
+  <div class="picker">
     <span class="picker__label">
-      <i :class="kind === 'voz' ? 'fa-solid fa-microphone-lines' : 'fa-solid fa-box-archive'"></i>
-      {{ kind === 'voz' ? 'Mis voces' : 'Mis recursos' }}
-      <em>toca para usar</em>
+      <i :class="meta.icon"></i> {{ meta.label }}
+      <em v-if="modelValue" class="picker__selected"><i class="fa-solid fa-check"></i> elegido</em>
+      <em v-else>opcional</em>
     </span>
 
-    <p v-if="loading" class="picker__loading">Cargando biblioteca…</p>
+    <div class="picker__strip">
+      <!-- Subir nuevo, sin salir del flujo -->
+      <button type="button" class="picker__add" :disabled="uploading" @click="fileInput?.click()">
+        <i :class="uploading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-plus'"></i>
+        <small>{{ uploading ? 'Subiendo…' : 'Subir' }}</small>
+      </button>
+      <input
+        ref="fileInput"
+        type="file"
+        :accept="isVoice ? 'audio/*' : 'image/*'"
+        class="picker__file"
+        @change="onFile"
+      />
 
-    <div v-else class="picker__strip">
+      <p v-if="loading" class="picker__loading">Cargando…</p>
+      <p v-else-if="!assets.length" class="picker__loading">{{ meta.empty }}</p>
+
       <button
-        v-for="a in items"
+        v-for="a in assets"
         :key="a._id"
         type="button"
         class="picker__item"
@@ -52,12 +101,14 @@ onMounted(async () => {
         :title="a.name"
         @click="toggle(a.url)"
       >
-        <img v-if="kind === 'image'" :src="a.url" :alt="a.name" loading="lazy" />
+        <img v-if="!isVoice" :src="a.url" :alt="a.name" loading="lazy" />
         <span v-else class="picker__voice"><i class="fa-solid fa-microphone-lines"></i></span>
         <small>{{ a.name }}</small>
         <i v-if="modelValue === a.url" class="fa-solid fa-circle-check picker__check"></i>
       </button>
     </div>
+
+    <p v-if="error" class="picker__error"><i class="fa-solid fa-circle-exclamation"></i>{{ error }}</p>
   </div>
 </template>
 
@@ -89,16 +140,53 @@ onMounted(async () => {
     }
   }
 
-  &__loading {
-    font-size: 0.74rem;
-    color: $text-secondary;
+  &__selected {
+    color: $BAKANO-GREEN !important;
+    font-weight: 700 !important;
   }
 
   &__strip {
     display: flex;
+    align-items: stretch;
     gap: 0.5rem;
     overflow-x: auto;
     padding-bottom: 0.3rem;
+  }
+
+  &__file {
+    display: none;
+  }
+
+  &__add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    flex: 0 0 84px;
+    min-height: 84px;
+    border: 2px dashed rgba($primary-dark, 0.22);
+    border-radius: 12px;
+    background: none;
+    color: $text-secondary;
+    font-family: $font-principal;
+
+    small {
+      font-size: 0.62rem;
+      font-weight: 700;
+    }
+
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+    }
+  }
+
+  &__loading {
+    align-self: center;
+    font-size: 0.74rem;
+    color: $text-secondary;
+    padding: 0 0.5rem;
   }
 
   &__item {
@@ -159,6 +247,14 @@ onMounted(async () => {
     background: $white;
     border-radius: 50%;
     font-size: 0.95rem;
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: $alert-error;
   }
 }
 </style>
